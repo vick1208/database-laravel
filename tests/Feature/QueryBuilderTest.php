@@ -291,27 +291,87 @@ class QueryBuilderTest extends TestCase
     {
         $this->insProducts();
         $res = DB::table('products')->count('id');
-        assertEquals(2,$res);
+        assertEquals(2, $res);
         $res = DB::table('products')->min('price');
-        assertEquals(2145000,$res);
+        assertEquals(2145000, $res);
         $res = DB::table('products')->max('price');
-        assertEquals(22550000,$res);
+        assertEquals(22550000, $res);
         $res = DB::table('products')->sum('price');
-        assertEquals(24695000,$res);
+        assertEquals(24695000, $res);
         $res = DB::table('products')->average('price');
-        assertEquals(12347500,$res);
+        assertEquals(12347500, $res);
     }
-    public function testQueryBuildRaw() : void {
+    public function testQueryBuildRaw(): void
+    {
         $this->insProducts();
-        
+
         $rows = DB::table('products')->select(
-            DB::raw('count(id) as total_prods'),
+            DB::raw('count(id) as total_product'),
             DB::raw('min(price) as min_price'),
             DB::raw('max(price) as max_price'),
         )->get();
 
-        assertEquals(2,$rows[0]->total_prods);
-        assertEquals(2145000,$rows[0]->min_price);
-        assertEquals(22550000,$rows[0]->max_price);
+        assertEquals(2, $rows[0]->total_prods);
+        assertEquals(2145000, $rows[0]->min_price);
+        assertEquals(22550000, $rows[0]->max_price);
     }
+    public function insProductFood()
+    {
+        DB::table("products")->insert([
+            "id" => "3",
+            "name" => "Bakso",
+            "category_id" => "FOOD",
+            "price" => 12000
+        ]);
+        DB::table("products")->insert([
+            "id" => "4",
+            "name" => "Mie Ayam",
+            "category_id" => "FOOD",
+            "price" => 10000
+        ]);
+    }
+    public function testQueryBuildGroup(): void
+    {
+        $this->insProducts();
+        $this->insProductFood();
+
+        $data = DB::table("products")
+            ->select("category_id", DB::raw("count(*) as total_product"))
+            ->groupBy("category_id")
+            ->orderByDesc("category_id")
+            ->get();
+        assertCount(2,$data);
+        assertEquals("SMARTPHONE",$data[0]->category_id);
+        assertEquals("FOOD",$data[1]->category_id);
+        assertEquals(2,$data[0]->total_product);
+        assertEquals(2,$data[1]->total_product);
+    }
+    public function testQueryBuildGroupHaving(): void
+    {
+        $this->insProducts();
+        $this->insProductFood();
+
+        $data = DB::table("products")
+            ->select("category_id", DB::raw("count(*) as total_product"))
+            ->groupBy("category_id")
+            ->having(DB::raw('count(*)'),'>',2)
+            ->orderByDesc("category_id")
+            ->get();
+        assertCount(0,$data);
+    }
+    public function testLocking()
+    {
+        $this->insProducts();
+
+        DB::transaction(function () {
+            $data = DB::table("products")
+                ->where('id', '=', '1')
+                ->lockForUpdate()
+                ->get();
+
+            self::assertCount(1, $data);
+        });
+
+    }
+
 }
