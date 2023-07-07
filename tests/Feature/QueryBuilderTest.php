@@ -340,11 +340,11 @@ class QueryBuilderTest extends TestCase
             ->groupBy("category_id")
             ->orderByDesc("category_id")
             ->get();
-        assertCount(2,$data);
-        assertEquals("SMARTPHONE",$data[0]->category_id);
-        assertEquals("FOOD",$data[1]->category_id);
-        assertEquals(2,$data[0]->total_product);
-        assertEquals(2,$data[1]->total_product);
+        assertCount(2, $data);
+        assertEquals("SMARTPHONE", $data[0]->category_id);
+        assertEquals("FOOD", $data[1]->category_id);
+        assertEquals(2, $data[0]->total_product);
+        assertEquals(2, $data[1]->total_product);
     }
     public function testQueryBuildGroupHaving(): void
     {
@@ -354,12 +354,12 @@ class QueryBuilderTest extends TestCase
         $data = DB::table("products")
             ->select("category_id", DB::raw("count(*) as total_product"))
             ->groupBy("category_id")
-            ->having(DB::raw('count(*)'),'>',2)
+            ->having(DB::raw('count(*)'), '>', 2)
             ->orderByDesc("category_id")
             ->get();
-        assertCount(0,$data);
+        assertCount(0, $data);
     }
-    public function testLocking()
+    public function testLocking(): void
     {
         $this->insProducts();
 
@@ -371,7 +371,41 @@ class QueryBuilderTest extends TestCase
 
             self::assertCount(1, $data);
         });
-
     }
 
+    public function testPaginate(): void
+    {
+        $this->insCategories();
+        $paginate = DB::table('categories')->paginate(perPage: 2, page: 2);
+        assertEquals(2, $paginate->currentPage());
+        assertEquals(2, $paginate->perPage());
+        assertEquals(2, $paginate->lastPage());
+        assertEquals(4, $paginate->total());
+
+        $data = $paginate->items();
+        assertCount(2, $data);
+        foreach ($data as $item) {
+            Log::info(json_encode($item));
+        }
+    }
+    public function testIterateAllPaginate(): void
+    {
+        $this->insCategories();
+
+        $page = 1;
+
+        while (true) {
+            $paginate = DB::table('categories')->paginate(perPage: 2, page: $page);
+            if ($paginate->isEmpty()) {
+                break;
+            } else {
+                $page++;
+                $data = $paginate->items();
+                assertCount(2, $data);
+                foreach ($data as $item) {
+                    Log::info(json_encode($item));
+                }
+            }
+        }
+    }
 }
