@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\CounterSeeder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -50,26 +52,7 @@ class QueryBuilderTest extends TestCase
     }
     public function insCategories(): void
     {
-        DB::table("categories")->insert([
-            "id" => "SMARTPHONE",
-            "name" => "Smartphone",
-            "created_at" => "2021-10-10 12:01:10"
-        ]);
-        DB::table("categories")->insert([
-            "id" => "FOOD",
-            "name" => "Food",
-            "created_at" => "2021-10-10 12:01:10"
-        ]);
-        DB::table("categories")->insert([
-            "id" => "LAPTOP",
-            "name" => "Laptop",
-            "created_at" => "2021-10-10 12:01:10"
-        ]);
-        DB::table("categories")->insert([
-            "id" => "FASHION",
-            "name" => "Fashion",
-            "created_at" => "2021-10-10 12:01:10"
-        ]);
+        $this->seed(CategorySeeder::class);
     }
 
     public function testWhere(): void
@@ -162,6 +145,7 @@ class QueryBuilderTest extends TestCase
     public function testIncrement(): void
     {
 
+        $this->seed(CounterSeeder::class);
         // DB::table('counters')->insert(['id' => 'test', 'counter' => 0]); 
         DB::table('counters')->where('id', '=', 'test')->increment('counter', 1);
         $data = DB::table('counters')->where("id", "=", "test")->get();
@@ -311,7 +295,7 @@ class QueryBuilderTest extends TestCase
             DB::raw('max(price) as max_price'),
         )->get();
 
-        assertEquals(2, $rows[0]->total_prods);
+        assertEquals(2, $rows[0]->total_product);
         assertEquals(2145000, $rows[0]->min_price);
         assertEquals(22550000, $rows[0]->max_price);
     }
