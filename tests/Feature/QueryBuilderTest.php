@@ -222,7 +222,7 @@ class QueryBuilderTest extends TestCase
             Log::info(json_encode($item));
         });
     }
-    public function testPagination(): void
+    public function testPaging(): void
     {
         $this->insCategories();
         $rows = DB::table('categories')
