@@ -74,25 +74,26 @@ class QueryBuilderTest extends TestCase
     {
         $this->insCategories();
 
-        $rows = DB::table("categories")->where(function (Builder $builder){
-            $builder->where('id','=','SMARTPHONE');
-            $builder->orWhere('id','=',"FOOD");
+        $rows = DB::table("categories")->where(function (Builder $builder) {
+            $builder->where('id', '=', 'SMARTPHONE');
+            $builder->orWhere('id', '=', "FOOD");
             // SELECT * FROM categories WHERE (id = smartphone or id = food)
         })->get();
 
-        assertCount(2,$rows);
-        $rows->each(function($item){
+        assertCount(2, $rows);
+        $rows->each(function ($item) {
             Log::info(json_encode($item));
         });
     }
-    public function testWhereBetween() : void {
+    public function testWhereBetween(): void
+    {
         $this->insCategories();
 
         $rows = DB::table("categories")
-        ->whereBetween("created_at",["2021-09-10 12:01:10","2021-10-30 12:01:10"])
-        ->get();
-        assertCount(4,$rows);
-        $rows->each(function($item){
+            ->whereBetween("created_at", ["2021-09-10 12:01:10", "2021-10-30 12:01:10"])
+            ->get();
+        assertCount(4, $rows);
+        $rows->each(function ($item) {
             Log::info(json_encode($item));
         });
     }
@@ -100,20 +101,21 @@ class QueryBuilderTest extends TestCase
     {
         $this->insCategories();
 
-        $rows = DB::table("categories")->whereIn("id",["SMARTPHONE","FOOD"])->get();
+        $rows = DB::table("categories")->whereIn("id", ["SMARTPHONE", "FOOD"])->get();
 
-        assertCount(2,$rows);
-        $rows->each(function($item){
+        assertCount(2, $rows);
+        $rows->each(function ($item) {
             Log::info(json_encode($item));
         });
     }
-    public function testWhereNull() : void {
+    public function testWhereNull()
+    {
         $this->insCategories();
 
         $rows = DB::table("categories")
-        ->whereNull("description")->get();
-        assertCount(4,$rows);
-        $rows->each(function($item){
+            ->whereNull("description")->get();
+        assertCount(4, $rows);
+        $rows->each(function ($item) {
             Log::info(json_encode($item));
         });
     }
@@ -123,9 +125,48 @@ class QueryBuilderTest extends TestCase
         $collection = DB::table("categories")
             ->whereDate("created_at", "2021-10-10")->get();
 
-        self::assertCount(4, $collection);
+        assertCount(4, $collection);
         $collection->each(function ($item) {
             Log::info(json_encode($item));
         });
+    }
+    public function testUpdateRow()
+    {
+        $this->insCategories();
+        DB::table("categories")->where("id", '=', 'SMARTPHONE')->update([
+            "name" => "Samsung Phones"
+        ]);
+        $collection = DB::table("categories")->where("name", "=", 'Samsung Phones')->get();
+        self::assertCount(1, $collection);
+        $collection->each(function ($item) {
+            Log::info(json_encode($item));
+        });
+    }
+
+    public function testUpIns(): void
+    {
+        DB::table('categories')->updateOrInsert(["id" => "CARS"], [
+            "name" => "Cars",
+            "description" => "Cars and Car Accesories",
+            "created_at" => "2021-10-13 14:17:30"
+        ]);
+
+        $data = DB::table('categories')->where("id", "=", "CARS")->get();
+        assertCount(1, $data);
+        $data->each(function ($item) {
+            Log::info(json_encode($item));
+        });
+    }
+    public function testIncrement(): void
+    {
+        DB::table('counters')->where('id', '=', 'test')->increment('counter', 1);
+        $data = DB::table('counters')->where("id", "=", "test")->get();
+        assertCount(1, $data);
+        $data->each(function ($item) {
+            Log::info(json_encode($item));
+        });
+    }
+    public function deleteRow(): void
+    {
     }
 }
