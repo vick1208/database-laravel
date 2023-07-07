@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 use function PHPUnit\Framework\assertCount;
+use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertNotNull;
 
 class QueryBuilderTest extends TestCase
@@ -250,41 +251,54 @@ class QueryBuilderTest extends TestCase
         $this->insManyCategories();
 
         DB::table('categories')->orderBy('id')
-        ->chunk(10,function ($categories) {
-            assertNotNull($categories);
-            Log::info("Begin Chunk");
-            $categories->each(function($category){
-                Log::info(json_encode($category));
+            ->chunk(10, function ($categories) {
+                assertNotNull($categories);
+                Log::info("Begin Chunk");
+                $categories->each(function ($category) {
+                    Log::info(json_encode($category));
+                });
+                Log::info("End Chunk");
             });
-            Log::info("End Chunk");
-        });
     }
-    public function testLazyRes():void
+    public function testLazyRes(): void
     {
         $this->insManyCategories();
 
         $data = DB::table('categories')->orderBy('id')
-        ->lazy(10)->take(4);
+            ->lazy(10)->take(4);
 
         assertNotNull($data);
 
-        $data->each(function($item){
+        $data->each(function ($item) {
             Log::info(json_encode($item));
         });
-
     }
-    public function testCursor():void
+    public function testCursor(): void
     {
         $this->insManyCategories();
 
         $data = DB::table('categories')->orderBy('id')
-        ->cursor();
+            ->cursor();
 
         assertNotNull($data);
 
-        $data->each(function($item){
+        $data->each(function ($item) {
             Log::info(json_encode($item));
         });
+    }
 
+    public function testAggRow(): void
+    {
+        $this->insProducts();
+        $res = DB::table('products')->count('id');
+        assertEquals(2,$res);
+        $res = DB::table('products')->min('price');
+        assertEquals(2145000,$res);
+        $res = DB::table('products')->max('price');
+        assertEquals(22550000,$res);
+        $res = DB::table('products')->sum('price');
+        assertEquals(24695000,$res);
+        $res = DB::table('products')->average('price');
+        assertEquals(12347500,$res);
     }
 }
