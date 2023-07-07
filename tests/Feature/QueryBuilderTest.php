@@ -17,8 +17,8 @@ class QueryBuilderTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        DB::delete('delete from `categories`');
-        // DB::table('categories')->truncate();
+        DB::table('categories')->truncate();
+        DB::table('counters')->truncate();
     }
 
     public function testInsertRow(): void
@@ -159,6 +159,8 @@ class QueryBuilderTest extends TestCase
     }
     public function testIncrement(): void
     {
+
+        // DB::table('counters')->insert(['id' => 'test', 'counter' => 0]); 
         DB::table('counters')->where('id', '=', 'test')->increment('counter', 1);
         $data = DB::table('counters')->where("id", "=", "test")->get();
         assertCount(1, $data);
@@ -166,7 +168,16 @@ class QueryBuilderTest extends TestCase
             Log::info(json_encode($item));
         });
     }
-    public function deleteRow(): void
+    public function testdeleteRow(): void
     {
+        $this->insCategories();
+        DB::table('categories')->where('id', '=', 'smartphone')->delete();
+
+        $data = DB::table('categories')->where('id', '=', 'smartphone')->get();
+        assertCount(0, $data);
+        $data->each(function ($item) {
+            Log::info(json_encode($item));
+        });
     }
+    
 }
