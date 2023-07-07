@@ -209,4 +209,16 @@ class QueryBuilderTest extends TestCase
             Log::info(json_encode($item));
         });
     }
+    public function testOrderingTable():void{
+        $this->insProducts();
+        $rows = DB::table("products")
+        ->whereNotNull('id')
+        ->orderByDesc('price')
+        ->orderBy("name")
+        ->get();
+        assertCount(2, $rows);
+        $rows->each(function ($item) {
+            Log::info(json_encode($item));
+        });
+    }
 }
