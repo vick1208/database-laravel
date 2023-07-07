@@ -234,4 +234,29 @@ class QueryBuilderTest extends TestCase
             Log::info(json_encode($item));
         });
     }
+    public function insManyCategories(): void
+    {
+        for ($i = 0; $i < 100; $i++) {
+            DB::table("categories")->insert([
+                "id" => "CATE-$i",
+                "name" => "Category $i",
+                "created_at" => "2021-10-10 12:01:10"
+            ]);
+        }
+    }
+
+    public function testChunk(): void
+    {
+        $this->insManyCategories();
+
+        DB::table('categories')->orderBy('id')
+        ->chunk(10,function ($categories) {
+            assertNotNull($categories);
+            Log::info("Begin Chunk");
+            $categories->each(function($category){
+                Log::info(json_encode($category));
+            });
+            Log::info("End Chunk");
+        });
+    }
 }
