@@ -17,8 +17,9 @@ class QueryBuilderTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        DB::table('categories')->truncate();
-        DB::table('counters')->truncate();
+        DB::delete('delete from `products`');
+        DB::delete("delete from `categories`");
+        DB::delete("delete from `counters`");
     }
 
     public function testInsertRow(): void
@@ -179,5 +180,33 @@ class QueryBuilderTest extends TestCase
             Log::info(json_encode($item));
         });
     }
-    
+    public function insProducts(): void
+    {
+        $this->insCategories();
+        DB::table("products")->insert([
+            "id" => "1",
+            "name" => "Iphone 14 Pro X",
+            "category_id" => "SMARTPHONE",
+            "price" => "22550000"
+        ]);
+        DB::table("products")->insert([
+            "id" => "2",
+            "name" => "Samsung Galaxy S21",
+            "category_id" => "SMARTPHONE",
+            "price" => "2145000"
+        ]);
+    }
+
+    public function testJoinTable(): void
+    {
+        $this->insProducts();
+        $rows = DB::table("products")
+            ->join('categories', 'products.category_id', '=', 'categories.id')
+            ->select('products.id', 'products.name', 'products.price', 'categories.name as cat_name')
+            ->get();
+        assertCount(2, $rows);
+        $rows->each(function ($item) {
+            Log::info(json_encode($item));
+        });
+    }
 }
