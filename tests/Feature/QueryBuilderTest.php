@@ -273,4 +273,18 @@ class QueryBuilderTest extends TestCase
         });
 
     }
+    public function testCursor():void
+    {
+        $this->insManyCategories();
+
+        $data = DB::table('categories')->orderBy('id')
+        ->cursor();
+
+        assertNotNull($data);
+
+        $data->each(function($item){
+            Log::info(json_encode($item));
+        });
+
+    }
 }
