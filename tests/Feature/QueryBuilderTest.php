@@ -259,4 +259,18 @@ class QueryBuilderTest extends TestCase
             Log::info("End Chunk");
         });
     }
+    public function testLazyRes():void
+    {
+        $this->insManyCategories();
+
+        $data = DB::table('categories')->orderBy('id')
+        ->lazy(10)->take(4);
+
+        assertNotNull($data);
+
+        $data->each(function($item){
+            Log::info(json_encode($item));
+        });
+
+    }
 }
