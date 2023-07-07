@@ -301,4 +301,17 @@ class QueryBuilderTest extends TestCase
         $res = DB::table('products')->average('price');
         assertEquals(12347500,$res);
     }
+    public function testQueryBuildRaw() : void {
+        $this->insProducts();
+        
+        $rows = DB::table('products')->select(
+            DB::raw('count(id) as total_prods'),
+            DB::raw('min(price) as min_price'),
+            DB::raw('max(price) as max_price'),
+        )->get();
+
+        assertEquals(2,$rows[0]->total_prods);
+        assertEquals(2145000,$rows[0]->min_price);
+        assertEquals(22550000,$rows[0]->max_price);
+    }
 }
