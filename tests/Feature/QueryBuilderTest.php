@@ -396,15 +396,34 @@ class QueryBuilderTest extends TestCase
 
         while (true) {
             $paginate = DB::table('categories')->paginate(perPage: 2, page: $page);
-            if ($paginate->isEmpty()) {
-                break;
-            } else {
+            if ($paginate->isNotEmpty()) {
                 $page++;
                 $data = $paginate->items();
                 assertCount(2, $data);
                 foreach ($data as $item) {
                     Log::info(json_encode($item));
                 }
+            } else {
+                break;
+            }
+        }
+    }
+    public function testCursorPaginate(): void
+    {
+        $this->insCategories();
+
+        $cursor = "id";
+        while (true) {
+            $paginate = DB::table('categories')->orderBy("id")->cursorPaginate(perPage:2,cursor:$cursor);
+
+            foreach($paginate->items() as $item){
+                assertNotNull($item);
+                Log::info(json_encode($item));
+            }
+
+            $cursor = $paginate->nextCursor();
+            if ($cursor == null) {
+                break;
             }
         }
     }
